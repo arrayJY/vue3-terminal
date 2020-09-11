@@ -25,7 +25,7 @@
   </div>
 </template>
 <script>
-import { ref, computed, reactive, toRefs } from "vue";
+import { computed, reactive, toRefs } from "vue";
 export default {
   props: {
     width: String,
@@ -34,15 +34,18 @@ export default {
     maxHeight: String,
   },
   setup(props) {
-    const prefix = ref("$");
-    const cursor = ref("|");
-    const terminalSizeStyle = computed(() => {
-      const hyphenate = (str) => str.replace(/\B([A-Z])/g, "-$1").toLowerCase();
-      const keys = ["width", "height", "maxHeight", "maxWidth"];
-      const strs = keys.map((key) =>
-        props[key] ? `${hyphenate(key)}: ${props[key]};` : ""
-      );
-      return "".concat(...strs);
+    const terminal = reactive({
+      prefix: "$",
+      cursor: "|",
+      terminalSizeStyle: computed(() => {
+        const hyphenate = (str) =>
+          str.replace(/\B([A-Z])/g, "-$1").toLowerCase();
+        const keys = ["width", "height", "maxHeight", "maxWidth"];
+        const strs = keys.map((key) =>
+          props[key] ? `${hyphenate(key)}: ${props[key]};` : ""
+        );
+        return "".concat(...strs);
+      }),
     });
 
     const text = reactive({
@@ -70,9 +73,7 @@ export default {
     });
 
     return {
-      prefix,
-      cursor,
-      terminalSizeStyle,
+      ...toRefs(terminal),
       ...toRefs(text),
     };
   },
