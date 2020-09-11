@@ -1,6 +1,14 @@
 <template>
-  <div></div>
-  <div class="terminal" :style="terminalSizeStyle">
+  <div
+    ref="terminal"
+    class="terminal"
+    tabindex="0"
+    :style="terminalSizeStyle"
+    @keypress="inputText($event)"
+    @keydown.left="leftArrow"
+    @keydown.right="rightArrow"
+    @keydown.delete="deleteChar($event.key)"
+  >
     <div class="terminal-header">
       <div class="terminal-header-button color-red"></div>
       <div class="terminal-header-button color-yellow"></div>
@@ -8,14 +16,16 @@
     </div>
     <div class="terminal-body">
       <div class="terminal-line">
-        <span>{{ prefix }}</span>
-        <span class="terminal-cursor"> {{ cursor }} </span>
+        <span class="terminal-prefix">{{ prefix }}</span>
+        <span class="terminal-text">{{ leftText }}</span>
+        <span class="terminal-cursor"> {{ cursor }}</span>
+        <span class="terminal-text">{{ rightText }}</span>
       </div>
     </div>
   </div>
 </template>
 <script>
-import { ref, computed } from "vue";
+import { ref, computed, reactive, toRefs } from "vue";
 export default {
   props: {
     width: String,
@@ -34,12 +44,46 @@ export default {
       );
       return "".concat(...strs);
     });
-    return { prefix, cursor, terminalSizeStyle };
+
+    const text = reactive({
+      leftText: "",
+      rightText: "",
+      inputText(event) {
+        const code = event.charCode || event.keyCode;
+        text.leftText += String.fromCharCode(code);
+      },
+      leftArrow() {
+        text.rightText = text.leftText.slice(-1) + text.rightText;
+        text.leftText = text.leftText.slice(0, -1);
+      },
+      rightArrow() {
+        text.leftText += text.rightText.slice(0, 1);
+        text.rightText = text.rightText.slice(1);
+      },
+      deleteChar(key) {
+        if (key === "Delete") {
+          text.rightText = text.rightText.slice(1);
+        } else {
+          text.leftText = text.leftText.slice(0, -1);
+        }
+      },
+    });
+
+    return {
+      prefix,
+      cursor,
+      terminalSizeStyle,
+      ...toRefs(text),
+    };
   },
 };
 </script>
 
 <style scoped>
+.terminal {
+  outline: none;
+  font-family: monospace;
+}
 .terminal-body {
   background-color: #424242;
   color: white;
@@ -51,15 +95,25 @@ export default {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
 }
 .terminal-line {
-  padding: 3px 10px;
+  padding: 5px 10px;
+  max-width: 100%;
+}
+
+.terminal-prefix {
+  margin-right: 5px;
+}
+
+.terminal-text {
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .terminal-cursor {
-  margin-left: 3px;
+  user-select: none;
   animation: blink 1s infinite steps(1, start);
 }
 
