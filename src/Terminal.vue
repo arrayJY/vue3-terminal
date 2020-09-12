@@ -63,8 +63,11 @@ export default {
       previousLines: [],
       text: computed(() => text.leftText + text.rightText),
       inputText(event) {
-        const code = event.charCode || event.keyCode;
-        text.leftText += String.fromCharCode(code);
+        //Enter.charCode === 13
+        if(event.charCode === 13){
+          return
+        }
+        text.leftText += String.fromCharCode(event.charCode);
       },
       leftArrow() {
         text.rightText = text.leftText.slice(-1) + text.rightText;
