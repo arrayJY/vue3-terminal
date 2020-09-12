@@ -51,6 +51,7 @@ export default {
     const text = reactive({
       leftText: "",
       rightText: "",
+      text: computed(() => text.leftText + text.rightText),
       inputText(event) {
         const code = event.charCode || event.keyCode;
         text.leftText += String.fromCharCode(code);
@@ -72,9 +73,16 @@ export default {
       },
     });
 
+    const command = reactive({
+      texts: computed(() => text.text.split(" ")),
+      command: computed(() => command.texts[0]),
+      args: computed(() => command.texts.slice(1)),
+    });
+
     return {
       ...toRefs(terminal),
       ...toRefs(text),
+      ...toRefs(command),
     };
   },
 };
