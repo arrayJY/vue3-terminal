@@ -8,6 +8,7 @@
     @keydown.left="leftArrow"
     @keydown.right="rightArrow"
     @keydown.delete="deleteChar($event.key)"
+    @keydown.enter="enter"
   >
     <div class="terminal-header">
       <div class="terminal-header-button color-red"></div>
@@ -15,6 +16,14 @@
       <div class="terminal-header-button color-green"></div>
     </div>
     <div class="terminal-body">
+      <div
+        class="terminal-line"
+        v-for="(line, index) in previousLines"
+        :key="index"
+      >
+        <span class="terminal-prefix">{{ prefix }}</span
+        ><span class="terminal-text">{{ line }}</span>
+      </div>
       <div class="terminal-line">
         <span class="terminal-prefix">{{ prefix }}</span>
         <span class="terminal-text">{{ leftText }}</span>
@@ -51,6 +60,7 @@ export default {
     const text = reactive({
       leftText: "",
       rightText: "",
+      previousLines: [],
       text: computed(() => text.leftText + text.rightText),
       inputText(event) {
         const code = event.charCode || event.keyCode;
@@ -70,6 +80,10 @@ export default {
         } else {
           text.leftText = text.leftText.slice(0, -1);
         }
+      },
+      enter() {
+        text.previousLines.push(text.text);
+        text.rightText = text.leftText = "";
       },
     });
 
@@ -92,9 +106,11 @@ export default {
 .terminal {
   outline: none;
   font-size: 12px;
-  font-family: "JetBrains Mono", "Source Code Pro", Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
+  font-family: "JetBrains Mono", "Source Code Pro", Monaco, Menlo, Consolas,
+    "Courier New", Courier, monospace;
 }
 .terminal-body {
+  overflow-y: scroll;
   background-color: #424242;
   color: white;
   height: 100%;
@@ -114,6 +130,7 @@ export default {
 }
 
 .terminal-prefix {
+  user-select: none;
   margin-right: 5px;
 }
 
