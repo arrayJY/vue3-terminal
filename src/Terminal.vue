@@ -91,7 +91,8 @@ export default {
 <style scoped>
 .terminal {
   outline: none;
-  font-family: monospace;
+  font-size: 12px;
+  font-family: "JetBrains Mono", "Source Code Pro", Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
 }
 .terminal-body {
   background-color: #424242;
