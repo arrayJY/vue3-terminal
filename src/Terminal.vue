@@ -22,7 +22,14 @@
         :key="index"
       >
         <span class="terminal-prefix">{{ prefix }}</span
-        ><span class="terminal-text">{{ line }}</span>
+        ><span class="terminal-text">{{ line.text }}</span>
+        <div
+          class="terminal-text-line"
+          v-for="result in line.result"
+          :key="result"
+        >
+          <span class="terminal-text">{{ result }}</span>
+        </div>
       </div>
       <div class="terminal-line">
         <span class="terminal-prefix">{{ prefix }}</span>
@@ -64,8 +71,8 @@ export default {
       text: computed(() => text.leftText + text.rightText),
       inputText(event) {
         //Enter.charCode === 13
-        if(event.charCode === 13){
-          return
+        if (event.charCode === 13) {
+          return;
         }
         text.leftText += String.fromCharCode(event.charCode);
       },
@@ -85,15 +92,42 @@ export default {
         }
       },
       enter() {
-        text.previousLines.push(text.text);
+        text.previousLines.push({ text: text.text, result: command.execute() });
         text.rightText = text.leftText = "";
       },
     });
+
+    const builtInCommands = {
+      clear: {
+        description: "Clear all the texts.",
+        handler: () => {
+          text.previousLines = [];
+        },
+      },
+      help: {
+        description: "Show the helps.",
+        handler: () => {
+          const title = ["Vue3-Terminal", "Available commands:"];
+          const commandDesciptions = Object.keys(command.commands).map(
+            (key) => `${key} -- ${command.commands[key].description}`
+          );
+          return title.concat(...commandDesciptions);
+        },
+      },
+    };
 
     const command = reactive({
       texts: computed(() => text.text.split(" ")),
       command: computed(() => command.texts[0]),
       args: computed(() => command.texts.slice(1)),
+      commands: { ...builtInCommands },
+      execute: () => {
+        const cmd = command.command;
+        const args = command.args;
+        return cmd in command.commands
+          ? command.commands[cmd].handler(args)
+          : [`Unknown command '${cmd}'`];
+      },
     });
 
     return {
@@ -129,6 +163,11 @@ export default {
 }
 .terminal-line {
   padding: 5px 10px;
+  max-width: 100%;
+}
+
+.terminal-text-line {
+  padding: 1px 0px;
   max-width: 100%;
 }
 
